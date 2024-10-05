@@ -1,0 +1,39 @@
+x-app: &app
+  build: .
+  restart: always
+  env_file:
+    - .env
+  volumes:
+    - .:/code
+  links:
+    - db
+    - redis
+  depends_on:
+    - db
+    - redis
+
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=celerytutorial
+      - POSTGRES_PASSWORD=celerytutorial
+      - POSTGRES_DB=celerytutorial
+    ports:
+      - "5432:5432"
+  web:
+    <<: *app
+    command: python manage.py runserver 0.0.0.0:9000
+    ports:
+      - "127.0.0.1:9000:9000"
+  celery:
+    <<: *app
+    command: celery -A project.celeryapp:app  worker -Q default -n celerytutorial.%%h --loglevel=INFO --max-memory-per-child=512000 --concurrency=1
+  beat:
+    <<: *app
+    command: celery -A project.celeryapp:app beat -S redbeat.RedBeatScheduler  --loglevel=DEBUG --pidfile /tmp/celerybeat.pid
+
