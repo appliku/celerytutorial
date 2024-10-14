@@ -1,0 +1,29 @@
+{% extends "mainapp/report_base.html" %}
+
+{% block content %}
+    <h1>Report of complexity: {{report.complexity}}</h1>
+    <p>Created at: {{ report.dt_created }}</p>
+    {% if report.dt_started %}
+        <p>Started at: {{ report.dt_started }}</p>
+    {% endif %}
+    {% if report.status == 2 %}
+        <p>Report is ready</p>
+        <p>Finished at: {{ report.finished_at }}</p>
+    {% elif report.status == 0 %}
+        <p>Report is waiting in queue</p>
+    {% elif report.status == 1 %}
+        <p>Report is generating</p>
+    {% else %}
+        <p>Task has failed to generate</p>
+    {% endif %}
+    {% if report.status == 0 or report.status == 1 %}
+        <p>Refresh page in 5 seconds.</p>
+        <script>
+            setTimeout(function(){
+                window.location.reload(1);
+            }, 5000);
+        </script>
+    {% endif %}
+    {% if report.result %}<p>{{ report.result|safe }}</p>{% endif %}
+{% endblock %}
+
